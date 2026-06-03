@@ -1,7 +1,7 @@
 class CreateNutritions < ActiveRecord::Migration[7.2]
   def change
     create_table :nutritions do |t|
-      t.references :recipe,   null: false, foreign_key: { on_delete: :cascade }
+      t.references :recipe,   null: false, foreign_key: { on_delete: :cascade }, index: { unique: true }
       t.decimal    :calories, precision: 7, scale: 2
       t.decimal    :protein,  precision: 6, scale: 2
       t.decimal    :fat,      precision: 6, scale: 2
@@ -12,6 +12,5 @@ class CreateNutritions < ActiveRecord::Migration[7.2]
       t.timestamps null: false
     end
 
-    add_index :nutritions, :recipe_id, unique: true
   end
 end

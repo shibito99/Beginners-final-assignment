@@ -16,6 +16,5 @@ class CreateShoppingListsAndItems < ActiveRecord::Migration[7.2]
       t.timestamps null: false
     end
 
-    add_index :shopping_items, :shopping_list_id
   end
 end

@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mysql:8.0-debian
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      RAILS_ENV: development
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 3306
+      SECRET_KEY_BASE: dev_secret_key_base_change_in_production
+      FRONTEND_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql_data:
+  bundle_cache:

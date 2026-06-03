@@ -10,6 +10,5 @@ class CreateIngredients < ActiveRecord::Migration[7.2]
       t.timestamps null: false
     end
 
-    add_index :ingredients, :recipe_id
   end
 end
