@@ -2,6 +2,7 @@ require "spec_helper"
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rspec/rails"
+require "shoulda/matchers"
 
 RSpec.configure do |config|
   config.fixture_paths = ["#{::Rails.root}/spec/fixtures"]
@@ -13,5 +14,8 @@ RSpec.configure do |config|
 end
 
 Shoulda::Matchers.configure do |config|
-  config.integrate { |with| with.test_framework(:rspec).library(:rails) }
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
 end

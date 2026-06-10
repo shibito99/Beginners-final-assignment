@@ -9,8 +9,8 @@ class Recipe < ApplicationRecord
 
   validates :title,    presence: true, length: { maximum: 100 }
   validates :genre,    presence: true, inclusion: { in: GENRES }
-  validates :servings, presence: true, numericality: { only_integer: true, in: 1..99 }
-  validates :cook_time, numericality: { only_integer: true, in: 1..999 }, allow_nil: true
+  validates :servings, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 99 }
+  validates :cook_time, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 999 }, allow_nil: true
   validates :description, length: { maximum: 500 }, allow_blank: true
 
   accepts_nested_attributes_for :ingredients,  allow_destroy: true, reject_if: :all_blank
