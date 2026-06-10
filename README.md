@@ -15,15 +15,15 @@
 
 | ファイル | 内容 |
 |---------|------|
-| [docs/requirements.md](docs/requirements.md) | ソフトウェア要件定義書（SRS） |
-| [docs/tech-stack.md](docs/tech-stack.md) | 技術スタック選定書 |
-| [docs/architecture.md](docs/architecture.md) | システムアーキテクチャ設計書 |
-| [docs/database-design.md](docs/database-design.md) | データベース設計書 |
-| [docs/api-design.md](docs/api-design.md) | API設計書 |
-| [docs/screen-design.md](docs/screen-design.md) | 画面設計書 |
-| [docs/infrastructure.md](docs/infrastructure.md) | インフラ設計書（Terraform） |
-| [docs/deployment.md](docs/deployment.md) | デプロイ手順書 |
-| [docs/test-plan.md](docs/test-plan.md) | テスト計画書 |
+| [docs/要件定義書.md](docs/要件定義書.md) | ソフトウェア要件定義書（SRS） |
+| [docs/技術スタック選定書.md](docs/技術スタック選定書.md) | 技術スタック選定書 |
+| [docs/アーキテクチャ設計書.md](docs/アーキテクチャ設計書.md) | システムアーキテクチャ設計書 |
+| [docs/データベース設計書.md](docs/データベース設計書.md) | データベース設計書 |
+| [docs/API設計書.md](docs/API設計書.md) | API設計書 |
+| [docs/画面設計書.md](docs/画面設計書.md) | 画面設計書 |
+| [docs/インフラ設計書.md](docs/インフラ設計書.md) | インフラ設計書（Terraform） |
+| [docs/デプロイ手順書.md](docs/デプロイ手順書.md) | デプロイ手順書 |
+| [docs/テスト計画書.md](docs/テスト計画書.md) | テスト計画書 |
 
 ## 開発フロー
 
