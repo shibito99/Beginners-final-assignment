@@ -12,5 +12,5 @@ Rails.application.configure do
   config.active_record.migration_error = :page_load
   config.active_record.verbose_query_logs = false
   config.active_record.maintain_test_schema = true
-  config.hosts << "www.example.com"
+  config.hosts = nil
 end
