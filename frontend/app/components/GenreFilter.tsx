@@ -1,18 +1,17 @@
 "use client";
 
-import { Genre, GENRES } from "../data/recipes";
+import { type Genre } from "../data/recipes";
 
 type Props = {
-  selected: Genre | "すべて";
-  onChange: (genre: Genre | "すべて") => void;
+  genres: Genre[];
+  selected: Genre;
+  onChange: (genre: Genre) => void;
 };
 
-export default function GenreFilter({ selected, onChange }: Props) {
-  const tabs: (Genre | "すべて")[] = ["すべて", ...GENRES];
-
+export default function GenreFilter({ genres, selected, onChange }: Props) {
   return (
     <nav className="flex gap-1 flex-wrap">
-      {tabs.map((genre) => {
+      {genres.map((genre) => {
         const isActive = selected === genre;
         return (
           <button
