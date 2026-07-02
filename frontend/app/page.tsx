@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import GenreFilter from "./components/GenreFilter";
 import RecipeCard from "./components/RecipeCard";
-import { Genre, RECIPES } from "./data/recipes";
+import { type Genre, GENRES, GENRE_VALUE } from "./data/recipes";
+import { fetchRecipes, type RecipeSummary } from "../lib/api";
 
 export default function Home() {
-  const [selectedGenre, setSelectedGenre] = useState<Genre | "すべて">("すべて");
+  const [selectedGenre, setSelectedGenre] = useState<Genre>("すべて");
+  const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered =
-    selectedGenre === "すべて"
-      ? RECIPES
-      : RECIPES.filter((r) => r.genre === selectedGenre);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    const params = selectedGenre !== "すべて"
+      ? { genre: GENRE_VALUE[selectedGenre] }
+      : {};
+
+    fetchRecipes(params)
+      .then((res) => setRecipes(res.data))
+      .catch(() => setError("レシピの取得に失敗しました。バックエンドサーバーが起動しているか確認してください。"))
+      .finally(() => setLoading(false));
+  }, [selectedGenre]);
 
   return (
     <div
@@ -23,16 +36,30 @@ export default function Home() {
         <Header />
 
         <div className="px-2 mb-6">
-          <GenreFilter selected={selectedGenre} onChange={setSelectedGenre} />
+          <GenreFilter
+            genres={["すべて", ...GENRES]}
+            selected={selectedGenre}
+            onChange={setSelectedGenre}
+          />
         </div>
 
-        {filtered.length === 0 ? (
+        {loading && (
+          <div className="text-center py-20 text-gray-400">読み込み中...</div>
+        )}
+
+        {error && (
+          <div className="text-center py-20 text-red-400">{error}</div>
+        )}
+
+        {!loading && !error && recipes.length === 0 && (
           <div className="text-center py-20 text-gray-400">
             該当するレシピが見つかりませんでした
           </div>
-        ) : (
+        )}
+
+        {!loading && !error && recipes.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-12">
-            {filtered.map((recipe) => (
+            {recipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
           </div>

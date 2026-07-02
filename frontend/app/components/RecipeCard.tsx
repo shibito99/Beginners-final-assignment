@@ -1,36 +1,61 @@
 "use client";
 
 import Image from "next/image";
-import { Recipe } from "../data/recipes";
+import { type RecipeSummary } from "../../lib/api";
+import { GENRE_LABEL } from "../data/recipes";
 
 type Props = {
-  recipe: Recipe;
+  recipe: RecipeSummary;
 };
 
 export default function RecipeCard({ recipe }: Props) {
+  const genreLabel = GENRE_LABEL[recipe.genre];
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-      <div className="relative h-52 w-full">
-        <Image
-          src={recipe.imageUrl}
-          alt={recipe.title}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+      <div className="relative h-52 w-full bg-gray-100">
+        {recipe.image_url ? (
+          <Image
+            src={recipe.image_url}
+            alt={recipe.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-300 text-sm">
+            画像なし
+          </div>
+        )}
       </div>
       <div className="p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 font-medium">
+            {genreLabel}
+          </span>
+        </div>
         <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
         <div className="flex items-center gap-4 text-sm text-gray-500">
-          <span className="flex items-center gap-1">
-            <ClockIcon />
-            {recipe.cookTime}分
-          </span>
+          {recipe.cook_time != null && (
+            <span className="flex items-center gap-1">
+              <ClockIcon />
+              {recipe.cook_time}分
+            </span>
+          )}
           <span className="flex items-center gap-1">
             <PersonIcon />
             {recipe.servings}人前
           </span>
         </div>
+        {recipe.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {recipe.tags.map((tag) => (
+              <span key={tag.id} className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
