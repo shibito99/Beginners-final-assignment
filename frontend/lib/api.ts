@@ -62,3 +62,43 @@ export async function fetchRecipe(id: number): Promise<RecipeDetail> {
   const json = await res.json();
   return json.data;
 }
+
+export type ValidationError = {
+  code: "VALIDATION_ERROR";
+  message: string;
+  details: Record<string, string[]>;
+};
+
+export async function createRecipe(body: FormData): Promise<RecipeDetail> {
+  const res = await fetch(`${API_BASE}/api/v1/recipes`, { method: "POST", body });
+  if (!res.ok) {
+    const json = await res.json();
+    throw json.error as ValidationError;
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+export async function updateRecipe(id: number, body: FormData): Promise<RecipeDetail> {
+  const res = await fetch(`${API_BASE}/api/v1/recipes/${id}`, { method: "PATCH", body });
+  if (!res.ok) {
+    const json = await res.json();
+    throw json.error as ValidationError;
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+export async function deleteRecipe(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/v1/recipes/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Failed to delete recipe: ${res.status}`);
+}
+
+export type Tag = { id: number; name: string };
+
+export async function fetchTags(): Promise<Tag[]> {
+  const res = await fetch(`${API_BASE}/api/v1/tags`);
+  if (!res.ok) throw new Error(`Failed to fetch tags: ${res.status}`);
+  const json = await res.json();
+  return json.data;
+}
