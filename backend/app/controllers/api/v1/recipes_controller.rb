@@ -111,6 +111,7 @@ module Api
 
       def image_url_for(key)
         return nil if key.blank?
+        return key if key.start_with?("http")
         "#{ENV.fetch('CLOUDFRONT_URL', '')}/#{key}"
       end
     end
