@@ -22,19 +22,19 @@ variable "ec2_public_key" {
 }
 
 variable "db_name" {
-  description = "RDSデータベース名"
+  description = "MySQLデータベース名（EC2内）"
   type        = string
   default     = "recipe_app_production"
 }
 
 variable "db_username" {
-  description = "RDSマスターユーザー名"
+  description = "MySQLユーザー名（EC2内）"
   type        = string
   default     = "recipe_admin"
 }
 
 variable "db_password" {
-  description = "RDSマスターパスワード"
+  description = "MySQLパスワード（EC2内）"
   type        = string
   sensitive   = true
 }

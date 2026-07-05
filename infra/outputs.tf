@@ -8,12 +8,6 @@ output "ec2_elastic_ip" {
   value       = module.ec2.elastic_ip
 }
 
-output "rds_endpoint" {
-  description = "RDSエンドポイント"
-  value       = module.rds.db_endpoint
-  sensitive   = true
-}
-
 output "frontend_bucket_name" {
   description = "フロントエンドS3バケット名"
   value       = module.s3.frontend_bucket_name

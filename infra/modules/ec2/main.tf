@@ -68,7 +68,6 @@ resource "aws_instance" "main" {
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
     cloudfront_token = var.cloudfront_token
-    db_host          = var.db_host
     db_name          = var.db_name
     db_username      = var.db_username
     db_password      = var.db_password

@@ -48,20 +48,9 @@ module "ec2" {
   ec2_public_key        = var.ec2_public_key
   image_bucket_arn      = module.s3.image_bucket_arn
   cloudfront_token      = var.cloudfront_custom_token
-  db_host               = module.rds.db_endpoint
   db_name               = var.db_name
   db_username           = var.db_username
   db_password           = var.db_password
-}
-
-module "rds" {
-  source             = "./modules/rds"
-  project_name       = var.project_name
-  subnet_ids         = module.vpc.private_subnet_ids
-  security_group_id  = module.security_group.rds_sg_id
-  db_name            = var.db_name
-  db_username        = var.db_username
-  db_password        = var.db_password
 }
 
 module "s3" {

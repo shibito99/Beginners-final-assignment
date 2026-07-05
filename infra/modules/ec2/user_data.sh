@@ -23,6 +23,29 @@ dnf install -y \
   libxml2-devel \
   libxslt-devel
 
+# MySQL 8.0 インストール
+dnf install -y mysql-community-server --enablerepo=mysql80-community || {
+  # mysql80-community リポジトリが未設定の場合はリポジトリを追加してインストール
+  dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+  dnf install -y mysql-community-server
+}
+
+# MySQL 起動・自動起動有効化
+systemctl enable mysqld
+systemctl start mysqld
+
+# MySQL 初期パスワード取得
+MYSQL_TEMP_PASS=$(grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')
+
+# MySQL 初期設定（パスワード変更・DB・ユーザー作成）
+mysql --connect-expired-password -uroot -p"$MYSQL_TEMP_PASS" << SQL
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${db_password}Root!';
+CREATE DATABASE IF NOT EXISTS ${db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${db_username}'@'localhost' IDENTIFIED BY '${db_password}';
+GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_username}'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+
 # Nginxの設定
 cat > /etc/nginx/conf.d/recipe-app.conf << 'NGINX_CONF'
 server {
@@ -77,7 +100,7 @@ RAILS_ENV=production
 RAILS_LOG_TO_STDOUT=true
 RAILS_SERVE_STATIC_FILES=false
 SECRET_KEY_BASE=$(openssl rand -hex 64)
-DB_HOST=${db_host}
+DB_HOST=localhost
 DB_NAME=${db_name}
 DB_USERNAME=${db_username}
 DB_PASSWORD=${db_password}
