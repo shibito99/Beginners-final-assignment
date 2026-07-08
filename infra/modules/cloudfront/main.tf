@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "main" {
   # Origin 2: EC2 APIサーバー
   origin {
     origin_id   = "ec2-api"
-    domain_name = var.ec2_elastic_ip
+    domain_name = var.ec2_elastic_ip_dns
 
     custom_origin_config {
       http_port              = 80

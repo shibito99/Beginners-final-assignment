@@ -1,10 +1,10 @@
 # このファイルをコピーして terraform.tfvars を作成してください
-# terraform.tfvars は .gitignore に含まれています
+# terraform.tfvars は .gitignore に含まれており、リポジトリにコミットされません
 
-ec2_public_key          = "ssh-rsa AAAA..."   # ssh-keygen で生成した公開鍵
-db_password             = "YourStrongPassword123!"
-cloudfront_custom_token = "your-random-secret-token"
+ec2_public_key          = "ssh-ed25519 AAAA..."   # ssh-keygen -t ed25519 で生成した公開鍵
+db_password             = "YourStrongPassword123!" # 英大文字・小文字・数字・記号を含む12文字以上
+cloudfront_custom_token = "your-random-secret-token" # openssl rand -hex 32 などで生成
 
-# カスタムドメインを使用する場合のみ設定
-# acm_certificate_arn = "arn:aws:acm:us-east-1:123456789:certificate/xxxx"
+# カスタムドメインを使用する場合のみ設定（不要なら削除）
+# acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxx-xxxx"
 # domain_name         = "recipe.example.com"

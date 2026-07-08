@@ -1,7 +1,13 @@
+data "aws_caller_identity" "current" {}
+
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+}
+
 # ---- フロントエンドバケット ----
 
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${var.project_name}-frontend"
+  bucket = "${var.project_name}-frontend-${local.account_id}"
   tags   = { Name = "${var.project_name}-frontend" }
 }
 
@@ -35,7 +41,7 @@ resource "aws_s3_bucket_policy" "frontend" {
 # ---- 画像バケット ----
 
 resource "aws_s3_bucket" "images" {
-  bucket = "${var.project_name}-images"
+  bucket = "${var.project_name}-images-${local.account_id}"
   tags   = { Name = "${var.project_name}-images" }
 }
 

@@ -14,6 +14,10 @@ variable "ec2_elastic_ip" {
   type = string
 }
 
+variable "ec2_elastic_ip_dns" {
+  type = string
+}
+
 variable "cloudfront_custom_token" {
   type      = string
   sensitive = true
