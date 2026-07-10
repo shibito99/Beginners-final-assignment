@@ -119,3 +119,53 @@ export async function uploadToS3(uploadUrl: string, file: File): Promise<void> {
   });
   if (!res.ok) throw new Error("Failed to upload image");
 }
+
+// ---- 買い物リスト ----
+
+export type ShoppingItem = {
+  name:    string;
+  checked: boolean;
+};
+
+export type ShoppingList = {
+  listId:    string;
+  name:      string;
+  items:     ShoppingItem[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchShoppingLists(): Promise<ShoppingList[]> {
+  const res = await fetch(`${API_BASE}/api/v1/shopping-lists`);
+  if (!res.ok) throw new Error("Failed to fetch shopping lists");
+  return res.json();
+}
+
+export async function createShoppingList(name: string, items: ShoppingItem[]): Promise<ShoppingList> {
+  const res = await fetch(`${API_BASE}/api/v1/shopping-lists`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ name, items }),
+  });
+  if (!res.ok) throw new Error("Failed to create shopping list");
+  return res.json();
+}
+
+export async function updateShoppingList(
+  id: string,
+  name: string,
+  items: ShoppingItem[]
+): Promise<ShoppingList> {
+  const res = await fetch(`${API_BASE}/api/v1/shopping-lists/${id}`, {
+    method:  "PUT",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ name, items }),
+  });
+  if (!res.ok) throw new Error("Failed to update shopping list");
+  return res.json();
+}
+
+export async function deleteShoppingList(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/v1/shopping-lists/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete shopping list");
+}
