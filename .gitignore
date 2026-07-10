@@ -25,6 +25,7 @@ infra/terraform.tfvars
 infra/*.tfplan
 infra/.terraform/
 infra/.terraform.lock.hcl
+infra/modules/lambda/lambda.zip
 
 # Logs / temp
 *.log

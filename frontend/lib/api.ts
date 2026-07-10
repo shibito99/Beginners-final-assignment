@@ -1,104 +1,99 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 export type ApiGenre = "japanese" | "western" | "chinese" | "ethnic" | "other";
 
-export type RecipeSummary = {
-  id: number;
-  title: string;
-  genre: ApiGenre;
-  servings: number;
-  cook_time: number | null;
-  image_url: string | null;
-  tags: { id: number; name: string }[];
-  created_at: string;
+export type Ingredient = { name: string; amount?: string; unit?: string };
+export type Step       = { body: string };
+
+export type Nutrition = {
+  calories?: number;
+  protein?:  number;
+  fat?:      number;
+  carbs?:    number;
+  fiber?:    number;
+  salt?:     number;
 };
 
-export type RecipeDetail = RecipeSummary & {
-  description: string | null;
-  ingredients: { id: number; name: string; amount: number | null; unit: string | null; sort_order: number }[];
-  instructions: { id: number; step_number: number; body: string; image_url: string | null }[];
-  nutrition: {
-    calories: number | null;
-    protein: number | null;
-    fat: number | null;
-    carbs: number | null;
-    fiber: number | null;
-    salt: number | null;
-  } | null;
-  updated_at: string;
+export type Recipe = {
+  recipeId:    string;
+  title:       string;
+  description?: string;
+  genre:       ApiGenre;
+  tags:        string[];
+  cookingTime?: number;
+  servings:    number;
+  ingredients: Ingredient[];
+  steps:       Step[];
+  imageKey?:   string;
+  nutrition?:  Nutrition;
+  createdAt:   string;
+  updatedAt:   string;
 };
 
-export type RecipesResponse = {
-  data: RecipeSummary[];
-  meta: { total: number; page: number; per_page: number };
+export type RecipeSummary = Recipe;
+export type RecipeDetail  = Recipe;
+
+export type RecipeInput = {
+  title:       string;
+  description?: string;
+  genre:       ApiGenre;
+  tags?:       string[];
+  cookingTime?: number;
+  servings:    number;
+  ingredients: Ingredient[];
+  steps:       Step[];
+  imageKey?:   string;
+  nutrition?:  Nutrition;
 };
 
-export type RecipeParams = {
-  genre?: ApiGenre;
+export async function fetchRecipes(params: {
   q?: string;
-  cook_time_max?: number;
-  ingredient?: string;
-  tag_ids?: string;
-  sort?: string;
-  page?: number;
-  per_page?: number;
-};
-
-export async function fetchRecipes(params: RecipeParams = {}): Promise<RecipesResponse> {
+  genre?: ApiGenre;
+  tag?: string;
+  cooking_time?: string;
+} = {}): Promise<Recipe[]> {
   const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== "") {
-      query.set(key, String(value));
-    }
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== "") query.set(k, String(v));
   }
   const res = await fetch(`${API_BASE}/api/v1/recipes?${query}`);
   if (!res.ok) throw new Error(`Failed to fetch recipes: ${res.status}`);
   return res.json();
 }
 
-export async function fetchRecipe(id: number): Promise<RecipeDetail> {
+export async function fetchRecipe(id: string): Promise<Recipe> {
   const res = await fetch(`${API_BASE}/api/v1/recipes/${id}`);
   if (!res.ok) throw new Error(`Recipe not found: ${res.status}`);
-  const json = await res.json();
-  return json.data;
+  return res.json();
 }
 
-export type ValidationError = {
-  code: "VALIDATION_ERROR";
-  message: string;
-  details: Record<string, string[]>;
-};
-
-export async function createRecipe(body: FormData): Promise<RecipeDetail> {
-  const res = await fetch(`${API_BASE}/api/v1/recipes`, { method: "POST", body });
-  if (!res.ok) {
-    const json = await res.json();
-    throw json.error as ValidationError;
-  }
-  const json = await res.json();
-  return json.data;
+export async function createRecipe(body: RecipeInput): Promise<Recipe> {
+  const res = await fetch(`${API_BASE}/api/v1/recipes`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Failed to create recipe");
+  return res.json();
 }
 
-export async function updateRecipe(id: number, body: FormData): Promise<RecipeDetail> {
-  const res = await fetch(`${API_BASE}/api/v1/recipes/${id}`, { method: "PATCH", body });
-  if (!res.ok) {
-    const json = await res.json();
-    throw json.error as ValidationError;
-  }
-  const json = await res.json();
-  return json.data;
+export async function updateRecipe(id: string, body: Partial<RecipeInput>): Promise<Recipe> {
+  const res = await fetch(`${API_BASE}/api/v1/recipes/${id}`, {
+    method:  "PUT",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Failed to update recipe");
+  return res.json();
 }
 
-export async function deleteRecipe(id: number): Promise<void> {
+export async function deleteRecipe(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/v1/recipes/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`Failed to delete recipe: ${res.status}`);
 }
 
-export type Tag = { id: number; name: string };
-
-export async function fetchTags(): Promise<Tag[]> {
-  const res = await fetch(`${API_BASE}/api/v1/tags`);
-  if (!res.ok) throw new Error(`Failed to fetch tags: ${res.status}`);
-  const json = await res.json();
-  return json.data;
+export function imageUrl(imageKey?: string): string | null {
+  if (!imageKey) return null;
+  const cdn = process.env.NEXT_PUBLIC_CDN_URL ?? "";
+  return cdn ? `${cdn}/${imageKey}` : null;
 }

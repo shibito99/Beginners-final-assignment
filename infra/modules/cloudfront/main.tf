@@ -42,21 +42,16 @@ resource "aws_cloudfront_distribution" "main" {
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
   }
 
-  # Origin 2: EC2 APIサーバー
+  # Origin 2: API Gateway (Lambda)
   origin {
-    origin_id   = "ec2-api"
-    domain_name = var.ec2_elastic_ip_dns
+    origin_id   = "api-gateway"
+    domain_name = var.api_gateway_domain
 
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "http-only"
+      origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
-    }
-
-    custom_header {
-      name  = "X-Custom-Token"
-      value = var.cloudfront_custom_token
     }
   }
 
@@ -85,24 +80,13 @@ resource "aws_cloudfront_distribution" "main" {
   # /api/* → EC2（キャッシュなし）
   ordered_cache_behavior {
     path_pattern           = "/api/*"
-    target_origin_id       = "ec2-api"
+    target_origin_id       = "api-gateway"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods         = ["GET", "HEAD"]
 
     cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
-  }
-
-  # /health → EC2（ヘルスチェック用）
-  ordered_cache_behavior {
-    path_pattern           = "/health"
-    target_origin_id       = "ec2-api"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-
-    cache_policy_id = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
   }
 
   # /images/* → 画像S3（キャッシュあり）
@@ -167,6 +151,6 @@ data "aws_cloudfront_cache_policy" "caching_disabled" {
   name = "Managed-CachingDisabled"
 }
 
-data "aws_cloudfront_origin_request_policy" "all_viewer" {
-  name = "Managed-AllViewer"
+data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
+  name = "Managed-AllViewerExceptHostHeader"
 }

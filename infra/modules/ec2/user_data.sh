@@ -7,7 +7,7 @@ timedatectl set-timezone Asia/Tokyo
 # パッケージ更新
 dnf update -y
 
-# 必要なパッケージのインストール
+# MariaDB 11.4（MySQL 8.0互換）と依存パッケージのインストール
 dnf install -y \
   nginx \
   git \
@@ -18,31 +18,23 @@ dnf install -y \
   readline-devel \
   zlib-devel \
   libffi-devel \
-  mysql-devel \
+  mariadb114-server \
+  mariadb114-devel \
   patch \
   libxml2-devel \
-  libxslt-devel
+  libxslt-devel \
+  libyaml-devel
 
-# MySQL 8.0 インストール
-dnf install -y mysql-community-server --enablerepo=mysql80-community || {
-  # mysql80-community リポジトリが未設定の場合はリポジトリを追加してインストール
-  dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
-  dnf install -y mysql-community-server
-}
+# MariaDB 起動・自動起動有効化
+systemctl enable mariadb
+systemctl start mariadb
 
-# MySQL 起動・自動起動有効化
-systemctl enable mysqld
-systemctl start mysqld
-
-# MySQL 初期パスワード取得
-MYSQL_TEMP_PASS=$(grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')
-
-# MySQL 初期設定（パスワード変更・DB・ユーザー作成）
-mysql --connect-expired-password -uroot -p"$MYSQL_TEMP_PASS" << SQL
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${db_password}Root!';
+# MariaDB 初期設定（DB・ユーザー作成）
+mysql -uroot << SQL
 CREATE DATABASE IF NOT EXISTS ${db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${db_username}'@'localhost' IDENTIFIED BY '${db_password}';
 GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_username}'@'localhost';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${db_password}Root!';
 FLUSH PRIVILEGES;
 SQL
 

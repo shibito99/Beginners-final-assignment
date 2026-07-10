@@ -10,17 +10,9 @@ variable "images_bucket_domain" {
   type = string
 }
 
-variable "ec2_elastic_ip" {
-  type = string
-}
-
-variable "ec2_elastic_ip_dns" {
-  type = string
-}
-
-variable "cloudfront_custom_token" {
-  type      = string
-  sensitive = true
+variable "api_gateway_domain" {
+  description = "API GatewayのドメインはHTTPS前提（スキームなし）"
+  type        = string
 }
 
 variable "acm_certificate_arn" {

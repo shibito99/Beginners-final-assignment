@@ -83,9 +83,9 @@ resource "aws_s3_bucket_policy" "images" {
         }
       },
       {
-        Sid      = "AllowEC2ReadWrite"
+        Sid      = "AllowLambdaReadWrite"
         Effect   = "Allow"
-        Principal = { AWS = var.ec2_iam_role_arn }
+        Principal = { AWS = var.lambda_iam_role_arn }
         Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
         Resource = "${aws_s3_bucket.images.arn}/*"
       }
