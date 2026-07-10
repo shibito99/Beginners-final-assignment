@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   type RecipeDetail,
   type ApiGenre,
@@ -9,6 +10,9 @@ import {
   type Step,
   createRecipe,
   updateRecipe,
+  requestPresignedUrl,
+  uploadToS3,
+  imageUrl,
 } from "../../lib/api";
 import { GENRE_VALUE, GENRES } from "../data/recipes";
 
@@ -30,8 +34,44 @@ export default function RecipeForm({ recipe, redirectBase = "/recipes" }: Props)
   const [steps,        setSteps]        = useState<Step[]>(
     recipe?.steps.length ? recipe.steps : [{ body: "" }]
   );
+  const [imageKey,     setImageKey]     = useState<string | undefined>(recipe?.imageKey);
+  const [imagePreview, setImagePreview] = useState<string | null>(imageUrl(recipe?.imageKey));
+  const [uploading,    setUploading]    = useState(false);
+  const [uploadError,  setUploadError]  = useState<string | null>(null);
   const [submitting,   setSubmitting]   = useState(false);
   const [baseError,    setBaseError]    = useState<string | null>(null);
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxMB = 5;
+    if (file.size > maxMB * 1024 * 1024) {
+      setUploadError(`画像は${maxMB}MB以下にしてください`);
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    setImagePreview(URL.createObjectURL(file));
+
+    try {
+      const { uploadUrl, imageKey: key } = await requestPresignedUrl(file.name, file.type);
+      await uploadToS3(uploadUrl, file);
+      setImageKey(key);
+    } catch {
+      setUploadError("画像のアップロードに失敗しました");
+      setImagePreview(imageUrl(imageKey) ?? null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleImageRemove() {
+    setImageKey(undefined);
+    setImagePreview(null);
+    setUploadError(null);
+  }
 
   function updateIngredient(i: number, field: keyof Ingredient, value: string) {
     setIngredients((rows) => rows.map((r, idx) => idx === i ? { ...r, [field]: value } : r));
@@ -60,6 +100,7 @@ export default function RecipeForm({ recipe, redirectBase = "/recipes" }: Props)
       servings:    Number(servings),
       ingredients: ingredients.filter((i) => i.name.trim()),
       steps:       steps.filter((s) => s.body.trim()),
+      imageKey:    imageKey || undefined,
     };
 
     try {
@@ -76,6 +117,35 @@ export default function RecipeForm({ recipe, redirectBase = "/recipes" }: Props)
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {baseError && <p className="text-red-500 text-sm">{baseError}</p>}
+
+      {/* 画像アップロード */}
+      <div>
+        <p className="block text-sm font-medium text-gray-700 mb-2">料理写真</p>
+        {imagePreview ? (
+          <div className="relative w-full h-52 rounded-xl overflow-hidden bg-gray-100 mb-2">
+            <Image src={imagePreview} alt="プレビュー" fill className="object-cover" sizes="100vw" unoptimized />
+            <button
+              type="button"
+              onClick={handleImageRemove}
+              className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm hover:bg-black/70 transition-colors"
+              aria-label="画像を削除"
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer bg-gray-50 hover:bg-orange-50 hover:border-orange-300 transition-colors">
+            <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <span className="text-sm text-gray-400">クリックして画像を選択</span>
+            <span className="text-xs text-gray-300 mt-1">JPEG / PNG / WebP・5MB以内</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageChange} disabled={uploading} />
+          </label>
+        )}
+        {uploading && <p className="text-xs text-orange-500 mt-1">アップロード中...</p>}
+        {uploadError && <p className="text-xs text-red-500 mt-1">{uploadError}</p>}
+      </div>
 
       <Field label="タイトル" required>
         <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}

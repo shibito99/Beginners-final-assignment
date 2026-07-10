@@ -97,3 +97,25 @@ export function imageUrl(imageKey?: string): string | null {
   const cdn = process.env.NEXT_PUBLIC_CDN_URL ?? "";
   return cdn ? `${cdn}/${imageKey}` : null;
 }
+
+export async function requestPresignedUrl(
+  filename: string,
+  contentType: string
+): Promise<{ uploadUrl: string; imageKey: string }> {
+  const res = await fetch(`${API_BASE}/api/v1/upload`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ filename, contentType }),
+  });
+  if (!res.ok) throw new Error("Failed to get upload URL");
+  return res.json();
+}
+
+export async function uploadToS3(uploadUrl: string, file: File): Promise<void> {
+  const res = await fetch(uploadUrl, {
+    method:  "PUT",
+    headers: { "Content-Type": file.type },
+    body:    file,
+  });
+  if (!res.ok) throw new Error("Failed to upload image");
+}
